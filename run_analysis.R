@@ -42,15 +42,20 @@ run_analysis <- function() {
     activity_labels <- read.table(paste0(subdir,"/activity_labels.txt"), sep=" ", 
                                   col.names=c("ActivityID","ActivityName"))
 
+    ## For each of the training and test data, merge the x, y and subject files into
+    ## a single data frame
     train_set <- get_data_set("train", subdir, width_vector, types_vector, col_names, wanted_cols)
     test_set <- get_data_set("test", subdir, width_vector, types_vector, col_names, wanted_cols)
   
+    ## Merge the training and test data frames into a single full data frame, and adds the ActivityName column.
     full_set <- rbind(train_set,test_set)
     full_set <- merge(full_set,activity_labels,sort=FALSE)
     
+    ## Reshape the data to contain means for each subject/activity combination.
     melt_set <- melt(full_set,id=c("Subject","ActivityName"),measure.vars=col_names[wanted_cols])
     mean_set <- dcast(melt_set, Subject + ActivityName ~ variable, mean)
     
+    ## Write the data out to the working directory
     write.table(mean_set,"Smartphones_tidy.txt",row.names=FALSE)
     return("Data written to 'Smartphones_tidy.txt' in your working directory.")
 }
